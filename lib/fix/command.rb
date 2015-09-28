@@ -18,7 +18,7 @@ module Fix
   #   Command.run('duck_fix.rb', '-w')
   #
   class Command
-    # Hand the parameters passed to fix command from the console.
+    # Handle the parameters passed to fix command from the console.
     #
     # @api public
     #
