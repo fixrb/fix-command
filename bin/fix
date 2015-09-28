@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require_relative File.join('..', 'lib', 'fix', 'command')
+
+Fix::Command.run(*ARGV)
