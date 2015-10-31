@@ -86,9 +86,9 @@ module Fix
 
         opts.on_tail '--version', 'Show the version' do
           puts File.read(File.join(File.expand_path(File.dirname(__FILE__)),
-            '..',
-            '..',
-            'VERSION.semver')).chomp
+                                   '..',
+                                   '..',
+                                   'VERSION.semver')).chomp
 
           exit
         end

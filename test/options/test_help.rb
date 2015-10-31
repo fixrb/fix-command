@@ -1,11 +1,13 @@
 require_relative File.join '..', 'support', 'coverage'
 require_relative File.join '..', '..', 'lib', 'fix', 'command'
 
-[:pathname, :spectus].each { |lib| require lib.to_s }
-
+require 'pathname'
 bin_path = Pathname.new(__FILE__).join '..', '..', '..', 'bin', 'fix'
 
-Spectus.this { `#{bin_path} --help` }.MUST Eql: <<-OUTPUT
+require 'spectus'
+include Spectus
+
+it { `#{bin_path} --help` }.MUST eql <<-OUTPUT
 Usage: fix <files or directories> [options]
 
 Specific options:
