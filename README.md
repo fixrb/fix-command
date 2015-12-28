@@ -52,6 +52,8 @@ First, let's see the API:
     Specific options:
             --debug                      Enable ruby debug
             --warnings                   Enable ruby warnings
+            --prefix=[PREFIX]            Prefix of the spec files
+            --suffix=[SUFFIX]            Suffix of the spec files
 
     Common options:
             --help                       Show this message

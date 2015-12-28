@@ -29,14 +29,19 @@ module Fix
     #
     # @raise [SystemExit] The result of the tests.
     def self.run(*args)
-      process_args(args)
+      config = process_args(args)
 
-      file_paths = fetch_file_paths(*args)
+      file_paths = fetch_file_paths(
+        config.fetch(:prefix),
+        config.fetch(:suffix), *args
+      )
 
       str  = "\e[37m"
       str += '> fix'
       str += ' --debug'          if $DEBUG
       str += ' --warnings'       if $VERBOSE
+      str += ' --prefix'         if config.fetch(:prefix)
+      str += ' --suffix'         if config.fetch(:suffix)
 
       puts str + ' ' + file_paths.to_a.join(' ') + "\e[22m"
 
@@ -59,7 +64,9 @@ module Fix
     def self.process_args(args)
       options = {
         debug:          false,
-        warnings:       false
+        warnings:       false,
+        prefix:         '',
+        suffix:         '_fix'
       }
 
       opt_parser = OptionParser.new do |opts|
@@ -74,6 +81,14 @@ module Fix
 
         opts.on('--warnings', 'Enable ruby warnings') do
           options[:warnings] = $VERBOSE = true
+        end
+
+        opts.on('--prefix=[PREFIX]', String, 'Prefix of the spec files') do |s|
+          options[:prefix] = s
+        end
+
+        opts.on('--suffix=[SUFFIX]', String, 'Suffix of the spec files') do |s|
+          options[:suffix] = s
         end
 
         opts.separator ''
@@ -99,7 +114,7 @@ module Fix
     end
 
     # @private
-    def self.fetch_file_paths(*args)
+    def self.fetch_file_paths(file_prefix, file_suffix, *args)
       absolute_paths = Set.new
 
       args << '.' if args.empty?
@@ -107,7 +122,7 @@ module Fix
         s = File.absolute_path(s) unless s.start_with?(File::SEPARATOR)
 
         if File.directory?(s)
-          spec_files = File.join(s, '**', '*_fix.rb')
+          spec_files = File.join(s, '**', "#{file_prefix}*#{file_suffix}.rb")
           Dir.glob(spec_files).each { |spec_f| absolute_paths.add(spec_f) }
         else
           absolute_paths.add(s)
