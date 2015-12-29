@@ -7,15 +7,25 @@ require 'set'
 # @api public
 #
 # @example Let's test a duck's spec!
-#   Fix::Command.run('duck_fix.rb', '-w')
+#   Fix::Command.run('duck_fix.rb', '--warnings')
 #
 module Fix
+  # Fix reads command line configuration options from files in two different
+  # locations:
+  #
+  # Local: "./.fix" (i.e. in the project's root directory)
+  # Global: "~/.fix" (i.e. in the user's home directory)
+  #
+  # Options declared in the local file override those in the global file, while
+  # those declared in command-line will override any ".fix" file.
+  COMMAND_LINE_OPTIONS_FILE = '.fix'
+
   # Open the command class.
   #
   # @api public
   #
   # @example Let's test a duck's spec!
-  #   Command.run('duck_fix.rb', '-w')
+  #   Command.run('duck_fix.rb', '--warnings')
   #
   class Command
     # Handle the parameters passed to fix command from the console.
@@ -23,7 +33,7 @@ module Fix
     # @api public
     #
     # @example Let's test a duck's spec!
-    #   run('duck_fix.rb', '-w')
+    #   run('duck_fix.rb', '--warnings')
     #
     # @param args [Array] A list of files and options.
     #
@@ -43,7 +53,7 @@ module Fix
       str += ' --prefix'         if config.fetch(:prefix)
       str += ' --suffix'         if config.fetch(:suffix)
 
-      puts str + ' ' + file_paths.to_a.join(' ') + "\e[22m"
+      puts file_paths.to_a.join(' ') + ' ' + str + "\e[22m"
 
       status = true
 
@@ -109,7 +119,13 @@ module Fix
         end
       end
 
+      %w(~ .).each do |c|
+        config_path = File.join(File.expand_path(c), COMMAND_LINE_OPTIONS_FILE)
+        opt_parser.load(config_path)
+      end
+
       opt_parser.parse!(args)
+
       options
     end
 

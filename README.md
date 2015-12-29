@@ -61,8 +61,8 @@ First, let's see the API:
 
 And second, let's run a test:
 
-    $ bundle exec fix duck_fix.rb -w
-    > fix --warnings /Users/bob/code/duck_fix.rb
+    $ bundle exec fix duck_fix.rb --warnings
+    > fix /Users/bob/code/duck_fix.rb --warnings
 
     /Users/bob/code/duck_fix.rb ..I
 
@@ -70,6 +70,10 @@ And second, let's run a test:
 
     Ran 3 tests in 0.000612 seconds
     100% compliant - 1 infos, 0 failures, 0 errors
+
+### Store Command Line Options
+
+You can store command line options in a `.fix` file in the project's root directory, and the fix command will read them as though you typed them on the command line.
 
 ## Security
 
