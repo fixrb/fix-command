@@ -44,16 +44,18 @@ module Fix
       file_paths = fetch_file_paths(
         config.fetch(:prefix),
         config.fetch(:suffix), *args
-      )
+      ).to_a.shuffle(random: Random.new(config.fetch(:random)))
 
       str  = "\e[37m"
-      str += '> fix'
+      str += '> fix '
+      str += file_paths.join(' ')
       str += ' --debug'          if $DEBUG
       str += ' --warnings'       if $VERBOSE
+      str += ' --random'         if config.fetch(:random)
       str += ' --prefix'         if config.fetch(:prefix)
       str += ' --suffix'         if config.fetch(:suffix)
 
-      puts file_paths.to_a.join(' ') + ' ' + str + "\e[22m"
+      puts "#{str} \e[22m"
 
       status = true
 
@@ -75,6 +77,7 @@ module Fix
       options = {
         debug:          false,
         warnings:       false,
+        random:         Random.new_seed,
         prefix:         '',
         suffix:         '_fix'
       }
@@ -91,6 +94,10 @@ module Fix
 
         opts.on('--warnings', 'Enable ruby warnings') do
           options[:warnings] = $VERBOSE = true
+        end
+
+        opts.on('--random=[SEED]', Integer, 'Predictable randomization') do |i|
+          options[:random] = i
         end
 
         opts.on('--prefix=[PREFIX]', String, 'Prefix of the spec files') do |s|
@@ -130,6 +137,8 @@ module Fix
     end
 
     # @private
+    #
+    # @return [Set] A list of absolute paths.
     def self.fetch_file_paths(file_prefix, file_suffix, *args)
       absolute_paths = Set.new
 
