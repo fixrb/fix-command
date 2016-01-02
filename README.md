@@ -74,17 +74,20 @@ And second, let's run a test:
 
 ### Store Command Line Options
 
-You can store command line options in a `.fix` file in the project's root directory, and the fix command will read them as though you typed them on the command line.
+You can store command-line configuration options in a `.fix` file in two different locations:
+
+* Local: "`./.fix`" (i.e. in the project's root directory)
+* Global: "`~/.fix`" (i.e. in the user's home directory)
+
+__Fix::Command__ will thus read them as though you typed them on the command-line.
+
+Options declared in the local file override those in the global file, while those declared in command-line will override any ".fix" file.
 
 ## Security
 
-As a basic form of security __Fix::Command__ provides a set of SHA512 checksums for
-every Gem release.  These checksums can be found in the `checksum/` directory.
-Although these checksums do not prevent malicious users from tampering with a
-built Gem they can be used for basic integrity verification purposes.
+As a basic form of security __Fix::Command__ provides a set of SHA512 checksums for every Gem release.  These checksums can be found in the `checksum/` directory.  Although these checksums do not prevent malicious users from tampering with a built Gem they can be used for basic integrity verification purposes.
 
-The checksum of a file can be checked using the `sha512sum` command.  For
-example:
+The checksum of a file can be checked using the `sha512sum` command.  For example:
 
     $ sha512sum pkg/fix-command-0.1.0.gem
     26198b7812a5ac118a5f2a1b63927871b3378efb071b37abb7e1ba87c1aac9f3a6b45eeae87d9dc647b194c15171b13f15e46503a9a1440b1233faf924381ff5  pkg/fix-command-0.1.0.gem

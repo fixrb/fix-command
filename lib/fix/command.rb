@@ -10,11 +10,11 @@ require 'set'
 #   Fix::Command.run('duck_fix.rb', '--warnings')
 #
 module Fix
-  # Fix reads command line configuration options from files in two different
-  # locations:
+  # Fix::Command reads command-line configuration options from files in two
+  # different locations:
   #
-  # Local: "./.fix" (i.e. in the project's root directory)
-  # Global: "~/.fix" (i.e. in the user's home directory)
+  # * Local: "./.fix" (i.e. in the project's root directory)
+  # * Global: "~/.fix" (i.e. in the user's home directory)
   #
   # Options declared in the local file override those in the global file, while
   # those declared in command-line will override any ".fix" file.
