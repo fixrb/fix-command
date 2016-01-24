@@ -46,31 +46,30 @@ And then execute:
 
 First, let's see the API:
 
-    $ bundle exec fix --help
-    Usage: fix <files or directories> [options]
+    $ fix --help
+    Usage: fix <directory> [options]
 
     Specific options:
-            --debug                      Enable ruby debug
-            --warnings                   Enable ruby warnings
-            --random=[SEED]              Predictable randomization
-            --prefix=[PREFIX]            Prefix of the spec files
-            --suffix=[SUFFIX]            Suffix of the spec files
+            --[no-]debug                 Enable ruby debug
+            --[no-]warnings              Enable ruby warnings
+            --[no-]diff                  Regression test selection
+            --random [SEED]              Predictable randomization
+            --prefix [PREFIX]            Prefix of the spec files
+            --suffix [SUFFIX]            Suffix of the spec files
 
     Common options:
-            --help                       Show this message
-            --version                    Show the version
+        -h, --help                       Show this message
+        -v, --version                    Show the version
 
 And second, let's run a test:
 
-    $ bundle exec fix duck_fix.rb --warnings
-    > fix /Users/bob/code/duck_fix.rb --warnings
+    $ fix ./app/ --prefix test_ --suffix --diff
+    > fix /Users/bob/app/duck_fix.rb --diff --random 198142038504094374390860708229193114294 --prefix "test_" --suffix ""
 
-    /Users/bob/code/duck_fix.rb ..I
+    /Users/bob/app/duck_fix.rb ..
 
-    1. Info: undefined method `sings' for #<Duck:0x007fdbeb05c1d8> (NoMethodError).
-
-    Ran 3 tests in 0.000612 seconds
-    100% compliant - 1 infos, 0 failures, 0 errors
+    Ran 2 tests in 0.000382 seconds
+    100% compliant - 0 infos, 0 failures, 0 errors
 
 ### Store Command Line Options
 
