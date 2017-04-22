@@ -32,7 +32,7 @@ module Fix
       config = process_args(true, args)
 
       if args.size > 1
-        fail ArgumentError, "wrong number of directories (given #{args.size})"
+        raise ArgumentError, "wrong number of directories (given #{args.size})"
       end
 
       file_paths = fetch_file_paths(
@@ -93,6 +93,7 @@ module Fix
         suffix:   '_fix'
       }
 
+      # rubocop:disable BlockLength
       opt_parser = OptionParser.new do |opts|
         opts.banner = 'Usage: fix <directory> [options]'
 
@@ -157,7 +158,7 @@ module Fix
 
     # @return [Array] Different locations of command-line configuration options.
     def self.config_paths
-      %w(~ .).map { |char| File.join(File.expand_path(char), config_file) }
+      %w[~ .].map { |char| File.join(File.expand_path(char), config_file) }
     end
 
     # @private

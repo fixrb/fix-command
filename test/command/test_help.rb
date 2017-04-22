@@ -7,6 +7,7 @@ bin_path = Pathname.new(__FILE__).join '..', '..', '..', 'bin', 'fix'
 require 'spectus'
 include Spectus
 
+# rubocop:disable IndentHeredoc
 it { `#{bin_path} --help` }.MUST eql <<-OUTPUT
 Usage: fix <directory> [options]
 
