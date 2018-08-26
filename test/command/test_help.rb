@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative File.join '..', 'support', 'coverage'
 require_relative File.join '..', '..', 'lib', 'fix', 'command'
 
@@ -23,3 +25,4 @@ Common options:
     -h, --help                       Show this message
     -v, --version                    Show the version
 OUTPUT
+# rubocop:enable IndentHeredoc

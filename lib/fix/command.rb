@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'fix'
 require 'optparse'
 require 'set'
@@ -141,6 +143,7 @@ module Fix
           exit
         end
       end
+      # rubocop:enable BlockLength
 
       if load_file
         config_paths.each { |config_path| opt_parser.load(config_path) }
