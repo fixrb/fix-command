@@ -87,12 +87,12 @@ module Fix
     # @param args       [Array]   List of parameters.
     def self.process_args(load_file, args)
       options = {
-        debug:    false,
+        debug: false,
         warnings: false,
-        diff:     false,
-        random:   Random.new_seed,
-        prefix:   '',
-        suffix:   '_fix'
+        diff: false,
+        random: Random.new_seed,
+        prefix: '',
+        suffix: '_fix'
       }
 
       # rubocop:disable BlockLength
