@@ -1,31 +1,19 @@
 # Fix::Command
 
-[![Build Status](https://travis-ci.org/fixrb/fix-command.svg?branch=master)][travis]
-[![Code Climate](https://codeclimate.com/github/fixrb/fix-command/badges/gpa.svg)][codeclimate]
-[![Gem Version](https://badge.fury.io/rb/fix-command.svg)][gem]
-[![Inline docs](http://inch-ci.org/github/fixrb/fix-command.svg?branch=master)][inchpages]
-[![Documentation](http://img.shields.io/:yard-docs-38c800.svg)][rubydoc]
+[![Version](https://img.shields.io/github/v/tag/fixrb/fix-command?label=Version&logo=github)](https://github.com/fixrb/fix-command/releases)
+[![Yard documentation](https://img.shields.io/badge/Yard-documentation-blue.svg?logo=github)](https://rubydoc.info/github/fixrb/fix-command/main)
+[![CI](https://github.com/fixrb/fix-command/workflows/CI/badge.svg?branch=main)](https://github.com/fixrb/fix-command/actions?query=workflow%3Aci+branch%3Amain)
+[![RuboCop](https://github.com/fixrb/fix-command/workflows/RuboCop/badge.svg?branch=main)](https://github.com/fixrb/fix-command/actions?query=workflow%3Arubocop+branch%3Amain)
+[![License](https://img.shields.io/github/license/fixrb/fix-command?label=License&logo=github)](https://github.com/fixrb/fix-command/raw/main/LICENSE.md)
 
 > Provides the `fix` command with several options.
-
-## Contact
-
-* Home page: https://github.com/fixrb/fix-command
-* Bugs/issues: https://github.com/fixrb/fix-command/issues
-* Support: https://stackoverflow.com/questions/tagged/fixrb
-
-## Rubies
-
-* [MRI](https://www.ruby-lang.org/)
-* [Rubinius](http://rubini.us/)
-* [JRuby](http://jruby.org/)
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'fix-command'
+gem "fix-command"
 ```
 
 And then execute:
@@ -75,41 +63,24 @@ You can store command-line configuration options in a `.fix` file in two differe
 __Fix::Command__ will thus read them as though you typed them on the command-line.
 
 Options declared in the local file override those in the global file, while those declared in command-line will override any ".fix" file.
+## Contact
 
-## Security
-
-As a basic form of security __Fix::Command__ provides a set of SHA512 checksums for every Gem release.  These checksums can be found in the `checksum/` directory.  Although these checksums do not prevent malicious users from tampering with a built Gem they can be used for basic integrity verification purposes.
-
-The checksum of a file can be checked using the `sha512sum` command.  For example:
-
-    $ sha512sum pkg/fix-command-0.1.0.gem
-    26198b7812a5ac118a5f2a1b63927871b3378efb071b37abb7e1ba87c1aac9f3a6b45eeae87d9dc647b194c15171b13f15e46503a9a1440b1233faf924381ff5  pkg/fix-command-0.1.0.gem
+* Home page: https://github.com/fixrb/fix-command
+* Bugs/issues: https://github.com/fixrb/fix-command/issues
 
 ## Versioning
 
-__Fix::Command__ follows [Semantic Versioning 2.0](http://semver.org/).
-
-## Contributing
-
-1. [Fork it](https://github.com/fixrb/fix-command/fork)
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+__Fix::Command__ follows [Semantic Versioning 2.0](https://semver.org/).
 
 ## License
 
-See `LICENSE.md` file.
-
-[gem]: https://rubygems.org/gems/fix-command
-[travis]: https://travis-ci.org/fixrb/fix-command
-[codeclimate]: https://codeclimate.com/github/fixrb/fix-command
-[gemnasium]: https://gemnasium.com/fixrb/fix-command
-[inchpages]: http://inch-ci.org/github/fixrb/fix-command
-[rubydoc]: http://rubydoc.info/gems/fix-command/frames
+The [gem](https://rubygems.org/gems/fix-command) is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
 ***
 
-This project is sponsored by:
-
-[![Sashite](https://sashite.com/img/sashite.png)](https://sashite.com/)
+<p>
+  This project is sponsored by:<br />
+  <a href="https://sashite.com/"><img
+    src="https://github.com/fixrb/fix-command/raw/main/img/sashite.png"
+    alt="Sashite" /></a>
+</p>

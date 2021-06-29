@@ -1,27 +1,27 @@
 # frozen_string_literal: true
 
 Gem::Specification.new do |spec|
-  spec.name          = 'fix-command'
-  spec.version       = File.read('VERSION.semver').chomp
-  spec.authors       = ['Cyril Kato']
-  spec.email         = ['contact@cyril.email']
+  spec.name          = "fix-command"
+  spec.version       = File.read("VERSION.semver").chomp
+  spec.author        = "Cyril Kato"
+  spec.email         = "contact@cyril.email"
+  spec.summary       = "Fix extension gem for the fix command."
+  spec.description   = "Provides the fix command to run specs."
+  spec.homepage      = "https://github.com/fixrb/fix-command"
+  spec.required_ruby_version = Gem::Requirement.new(">= 2.7.0")
+  spec.license       = "MIT"
+  spec.files         = Dir["LICENSE.md", "README.md", "lib/**/*", "bin/fix"]
+  spec.executables = ["fix"]
 
-  spec.summary       = 'Fix extension gem for the fix command.'
-  spec.description   = 'Provides the fix command to run specs.'
-  spec.homepage      = 'https://github.com/fixrb/fix-command'
-  spec.license       = 'MIT'
+  spec.add_dependency "fix", "~> 0.18.0"
 
-  spec.files         =
-    `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^test/}) }
-  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
-  spec.require_paths = ['lib']
-
-  spec.add_dependency 'fix',                    '~> 0.18.0'
-
-  spec.add_development_dependency 'bundler',    '~> 2.0'
-  spec.add_development_dependency 'rake',       '~> 12.3'
-  spec.add_development_dependency 'rubocop',    '~> 0.67'
-  spec.add_development_dependency 'simplecov',  '~> 0.16'
-  spec.add_development_dependency 'yard',       '~> 0.9'
-  spec.add_development_dependency 'spectus',    '~> 3.0'
+  spec.add_development_dependency "bundler"
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency "rubocop-md"
+  spec.add_development_dependency "rubocop-performance"
+  spec.add_development_dependency "rubocop-rake"
+  spec.add_development_dependency "rubocop-thread_safety"
+  spec.add_development_dependency "simplecov"
+  spec.add_development_dependency "spectus"
+  spec.add_development_dependency "yard"
 end
