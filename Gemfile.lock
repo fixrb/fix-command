@@ -55,11 +55,12 @@ GEM
       defi (~> 1.1.5)
       matchi (~> 1.0.4)
     unicode-display_width (2.0.0)
-    yard (0.9.26)
+    yard (0.9.36)
 
 PLATFORMS
   x86_64-darwin-18
   x86_64-darwin-19
+  x86_64-linux
 
 DEPENDENCIES
   bundler
