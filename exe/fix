@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative File.join("..", "lib", "fix", "command")
+
+begin
+  exit(Fix::Command.run(ARGV))
+rescue Interrupt
+  # Ctrl-C ended the file being run, through the terminal: leave as the
+  # shell expects, without a backtrace of the command.
+  exit(130)
+end

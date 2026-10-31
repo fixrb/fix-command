@@ -1,86 +1,67 @@
-# Fix::Command
+# fix-command
 
-[![Version](https://img.shields.io/github/v/tag/fixrb/fix-command?label=Version&logo=github)](https://github.com/fixrb/fix-command/releases)
-[![Yard documentation](https://img.shields.io/badge/Yard-documentation-blue.svg?logo=github)](https://rubydoc.info/github/fixrb/fix-command/main)
-[![CI](https://github.com/fixrb/fix-command/workflows/CI/badge.svg?branch=main)](https://github.com/fixrb/fix-command/actions?query=workflow%3Aci+branch%3Amain)
-[![RuboCop](https://github.com/fixrb/fix-command/workflows/RuboCop/badge.svg?branch=main)](https://github.com/fixrb/fix-command/actions?query=workflow%3Arubocop+branch%3Amain)
-[![License](https://img.shields.io/github/license/fixrb/fix-command?label=License&logo=github)](https://github.com/fixrb/fix-command/raw/main/LICENSE.md)
-
-> Provides the `fix` command with several options.
+The `fix` command runs each specification file of [Fix](https://github.com/fixrb/fix) in a process of its own, lets their results through, and tells how many files were met: its status is 0 when every file is.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem "fix-command"
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install fix-command
+Add `gem "fix-command"` to your Gemfile, or run `gem install fix-command`. It brings `fix` with it. Ruby 3.3 or later is required, with `fork(2)`, as Fix requires it.
 
 ## Usage
 
-First, let's see the API:
+A specification file ends with `exit(Fix[:Name].test { … })`, which makes the status of its process 0 when the specification is met and 1 otherwise. The command runs such files, with the Ruby that runs it, and reads that status, the one thing a subject cannot forge: it reads nothing else, and what the files write goes through as it is.
 
-    $ fix --help
-    Usage: fix <directory> [options]
+```console
+$ fix
+fix/account_fix.rb:6: Success: expected 100 to eq 100
+fix/account_fix.rb:7: Failure: expected 100 to eq 200
+fix/duck_fix.rb:5: Success: expected "Quack!" to eq "Quack!"
+fix/lot/empty_fix.rb:5: Success: expected 0 to eq 0
+3 files, 1 not met: fix/account_fix.rb
+$ echo $?
+1
+```
 
-    Specific options:
-            --[no-]debug                 Enable ruby debug
-            --[no-]warnings              Enable ruby warnings
-            --[no-]diff                  Regression test selection
-            --random [SEED]              Predictable randomization
-            --prefix [PREFIX]            Prefix of the spec files
-            --suffix [SUFFIX]            Suffix of the spec files
+Without an argument, `fix` runs the `*_fix.rb` files of the `fix` directory, at any depth: `fix/` is to Fix what `test/` is to minitest. With arguments, it runs the files given, whatever their names (one that starts with a dash is given with its directory, `./-x_fix.rb`), and the `*_fix.rb` files of the directories given, in the order of their names. As the `*` of the shell, the search leaves out the names that start with a dot, and it does not follow a symbolic link to a directory:
 
-    Common options:
-        -h, --help                       Show this message
-        -v, --version                    Show the version
+```console
+$ fix fix/duck_fix.rb lib/
+```
 
-And second, let's run a test:
+The files run one after the other, each in a new process: an `exit`, a global, a constant, the current directory or `ENV` changed by one file do not reach the next. Each file is on its own for what it needs too, a `require_relative "../lib/account"` for its subject, say. What the processes inherit is the environment of the command: `bundle exec fix` gives every file the gems of the Gemfile, `RUBYOPT=-Ilib fix` adds `lib` to their load path, and `RUBYOPT=-w fix` runs them with warnings.
 
-    $ fix ./app/ --prefix test_ --suffix --diff
-    > fix /Users/bob/app/duck_fix.rb --diff --random 198142038504094374390860708229193114294 --prefix "test_" --suffix ""
+### Random order
 
-    /Users/bob/app/duck_fix.rb ..
+A context runs in a child process, so the order of the contexts of a file cannot change a result, and neither can the order of the files, as far as the process goes. What a subject does outside the process can depend on it, though: a database or a file that one specification leaves changed for the next. `--random` runs the files in a random order, and writes first the command that runs them in the same order again:
 
-    Ran 2 tests in 0.000382 seconds
-    100% compliant - 0 infos, 0 failures, 0 errors
+```console
+$ fix --random
+fix --random=3
+fix/duck_fix.rb:5: Success: expected "Quack!" to eq "Quack!"
+fix/account_fix.rb:6: Success: expected 100 to eq 100
+fix/account_fix.rb:7: Failure: expected 100 to eq 200
+fix/lot/empty_fix.rb:5: Success: expected 0 to eq 0
+3 files, 1 not met: fix/account_fix.rb
+```
 
-### Store Command Line Options
+### Status
 
-You can store command-line configuration options in a `.fix` file in two different locations:
+0 when every file was met, 1 when one was not: a specification not met, a file that raised when loaded, a process that died. 2 for a usage error, written on the standard error with the usage: an unknown option, a path that does not exist, or no file to run. `--help` writes the usage, `--version` the version.
 
-* Local: "`./.fix`" (i.e. in the project's root directory)
-* Global: "`~/.fix`" (i.e. in the user's home directory)
+## What the command does not do
 
-__Fix::Command__ will thus read them as though you typed them on the command-line.
-
-Options declared in the local file override those in the global file, while those declared in command-line will override any ".fix" file.
-## Contact
-
-* Home page: https://github.com/fixrb/fix-command
-* Bugs/issues: https://github.com/fixrb/fix-command/issues
+- It does not read the results: no count of expectations, no colour, no letter per expectation. The lines are those of Fix, one per expectation, `LOCATION: OUTCOME: SUMMARY`, with the backtrace of an error below; `grep` counts them if needed.
+- It has no timeout: a file that never ends holds the command, as it would hold `ruby`. Ctrl-C ends the command and, through the terminal, the file being run.
+- It runs the files one at a time.
+- It takes no option for `ruby`: `RUBYOPT` and `RUBYLIB` do that, and `bundle exec` the rest.
 
 ## Versioning
 
-__Fix::Command__ follows [Semantic Versioning 2.0](https://semver.org/).
+fix-command follows [Semantic Versioning 2.0](https://semver.org/).
 
 ## License
 
-The [gem](https://rubygems.org/gems/fix-command) is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The [gem](https://rubygems.org/gems/fix-command) is available as open source under the terms of the [MIT License](https://github.com/fixrb/fix-command/raw/main/LICENSE.md).
 
-***
+## Sponsors
 
-<p>
-  This project is sponsored by:<br />
-  <a href="https://sashite.com/"><img
-    src="https://github.com/fixrb/fix-command/raw/main/img/sashite.png"
-    alt="Sashite" /></a>
-</p>
+This project is sponsored by [Sashité](https://sashite.com/).

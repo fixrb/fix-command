@@ -6,7 +6,7 @@ require "rubocop/rake_task"
 require "yard"
 
 Rake::TestTask.new do |t|
-  t.pattern = "test/**/test_*.rb"
+  t.pattern = File.join("test", "test_*.rb")
   t.verbose = true
   t.warning = true
 end
@@ -14,4 +14,8 @@ end
 RuboCop::RakeTask.new
 YARD::Rake::YardocTask.new
 
-task default: %i[yard rubocop:auto_correct test]
+task default: %i[
+  rubocop
+  test
+  yard
+]

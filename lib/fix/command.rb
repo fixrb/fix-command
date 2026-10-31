@@ -1,216 +1,130 @@
 # frozen_string_literal: true
 
-require "fix"
-require "optparse"
-require "set"
+require "rbconfig"
+require "shellwords"
 
-# Namespace for the Fix framework.
-#
-# @api public
-#
-# @example Let's test a duck!
-#   Fix::Command.run('./duck/', '--warnings')
-#
+# The namespace of Fix, which the command shares with the fix gem.
 module Fix
-  # Open the command class.
+  # The fix command: runs each specification file in a process of its own,
+  # lets its results through, and tells how many files were met.
   #
-  # @api public
+  # A file is met when its process exits with 0, which is what
+  # `exit(Fix[:Name].test { … })` gives at the end of a file. The status is
+  # the one thing a subject cannot forge, so the command reads nothing else.
   #
-  # @example Let's test a duck!
-  #   Command.run('./duck/', '--warnings')
-  #
-  class Command
-    # Handle the parameters passed to fix command from the console.
+  # @example
+  #   Fix::Command.run(["fix/"]) # => 0
+  module Command
+    # The version of the command, written by --version.
+    VERSION = File.read(File.join(__dir__, "..", "..", "VERSION.semver")).chomp
+    DIRECTORY = "fix"
+    PATTERN = "*_fix.rb"
+    SEARCH = File.join("**", PATTERN)
+    OPTION = /\A--(?:random(?:=\d+)?|help|version)\z/
+    # The text of --help, and of a usage error.
+    USAGE = <<~TEXT.freeze
+      Usage: fix [OPTION]... [FILE|DIRECTORY]...
+
+      Runs each file in a process of its own, with the Ruby that runs fix, and
+      writes how many files were met. A directory stands for the #{PATTERN} files
+      it holds, and no argument for the #{DIRECTORY} directory. The files run in the
+      order of the arguments, those of a directory in the order of their names,
+      or in a random order with --random, which writes first the command that
+      runs them in the same order again.
+
+      Options:
+        --random         Run the files in a random order
+        --random=SEED    Run the files in the random order of this seed
+        --help           Show this message
+        --version        Show the version
+
+      Status: 0 when every file was met, 1 otherwise, 2 for a usage error.
+    TEXT
+
+    private_constant :DIRECTORY, :PATTERN, :SEARCH, :OPTION
+
+    # Runs the command and returns its status.
     #
-    # @api public
-    #
-    # @example Let's test a duck's spec!
-    #   run('./duck/', '--warnings')
-    #
-    # @param args [Array] A list of files and options.
-    #
-    # @raise [SystemExit] The result of the tests.
-    def self.run(*args)
-      config = process_args(true, args)
+    # @param argv [Array<String>] the arguments: options and paths, in any order
+    # @param out [IO] where the command and the files write
+    # @param err [IO] where the usage errors go, and what the files write on their standard error
+    # @return [Integer] 0 when every file was met, 1 otherwise, 2 for a usage error
+    def self.run(argv, out: $stdout, err: $stderr)
+      options, arguments = argv.partition { |argument| argument.start_with?("-") }
+      unknown = options.find { |option| !option.match?(OPTION) }
+      return usage(err, "unknown option: #{unknown}") if unknown
+      return write(out, USAGE) if options.include?("--help")
+      return write(out, VERSION) if options.include?("--version")
 
-      if args.size > 1
-        raise ArgumentError, "wrong number of directories (given #{args.size})"
-      end
-
-      file_paths = fetch_file_paths(
-        config.fetch(:diff),
-        config.fetch(:prefix),
-        config.fetch(:suffix),
-        (args.first || ".")
-      ).to_a.sort.shuffle(random: Random.new(config.fetch(:random)))
-
-      puts report(config, *file_paths)
-
-      if file_paths.empty?
-        puts "Specs not found."
-        exit
-      end
-
-      status = true
-
-      file_paths.each do |file_path|
-        begin
-          puts
-          print "\e[30m#{file_path}\e[0m "
-          require file_path
-        rescue SystemExit => e
-          status = false unless e.success?
-        end
-      end
-
-      exit(status)
+      test(arguments, options.find { |option| option.start_with?("--random") }, out, err)
     end
 
-    # @private
-    #
-    # @return [String] Report the command-line.
-    def self.report(config, *file_paths)
-      str = "> fix #{file_paths.join(' ')}"
-      str += " --debug"     if $DEBUG
-      str += " --warnings"  if $VERBOSE
-      str += " --diff"      if config.fetch(:diff)
-      str += " --random #{config.fetch(:random)}"
-      str += " --prefix #{config.fetch(:prefix).inspect}"
-      str += " --suffix #{config.fetch(:suffix).inspect}"
-
-      ["\e[37m", str, "\e[0m"].join
+    # Writes the usage error on `err` and returns the status of a usage error.
+    def self.usage(err, message)
+      err.puts("fix: #{message}", USAGE)
+      2
     end
 
-    # @private
-    #
-    # @param load_file  [Boolean] Preload configuration options from files.
-    # @param args       [Array]   List of parameters.
-    def self.process_args(load_file, args)
-      options = {
-        debug:    false,
-        warnings: false,
-        diff:     false,
-        random:   Random.new_seed,
-        prefix:   "",
-        suffix:   "_fix"
-      }
-
-      # rubocop:disable Metrics/BlockLength
-      opt_parser = OptionParser.new do |opts|
-        opts.banner = "Usage: fix <directory> [options]"
-
-        opts.separator ""
-        opts.separator "Specific options:"
-
-        opts.on("--[no-]debug", "Enable ruby debug") do |b|
-          options[:debug] = $DEBUG = b
-        end
-
-        opts.on("--[no-]warnings", "Enable ruby warnings") do |b|
-          options[:warnings] = $VERBOSE = b
-        end
-
-        opts.on("--[no-]diff", "Regression test selection") do |b|
-          options[:diff] = b
-        end
-
-        opts.on("--random [SEED]", Integer, "Predictable randomization") do |i|
-          options[:random] = Integer(i)
-        end
-
-        opts.on("--prefix [PREFIX]", String, "Prefix of the spec files") do |s|
-          options[:prefix] = s.to_s
-        end
-
-        opts.on("--suffix [SUFFIX]", String, "Suffix of the spec files") do |s|
-          options[:suffix] = s.to_s
-        end
-
-        opts.separator ""
-        opts.separator "Common options:"
-
-        opts.on_tail "-h", "--help", "Show this message" do
-          puts opts
-          exit
-        end
-
-        opts.on_tail "-v", "--version", "Show the version" do
-          puts File.read(File.join(File.expand_path(File.dirname(__FILE__)),
-                                   "..",
-                                   "..",
-                                   "VERSION.semver")).chomp
-
-          exit
-        end
-      end
-      # rubocop:enable Metrics/BlockLength
-
-      if load_file
-        config_paths.each { |config_path| opt_parser.load(config_path) }
-      end
-
-      opt_parser.parse!(args)
-
-      options
+    # Writes the text on `out` and returns the status of a run that had
+    # nothing to test.
+    def self.write(out, text)
+      out.puts(text)
+      0
     end
 
-    # @return [String] The configuration file.
-    def self.config_file
-      ".fix"
+    # Runs the files of the arguments, in their order or in the random order
+    # of the option, and returns the status.
+    def self.test(arguments, random, out, err)
+      paths = arguments.empty? ? [DIRECTORY] : arguments
+      missing = paths.find { |path| !File.exist?(path) }
+      return usage(err, "no such file or directory: #{missing}") if missing
+
+      files = files(paths)
+      return usage(err, "no file to run") if files.empty?
+
+      files = shuffle(files, random, arguments, out) if random
+      report(files, files.reject { |file| met?(file, out, err) }, out)
     end
 
-    # @return [Array] Different locations of command-line configuration options.
-    def self.config_paths
-      %w[~ .].map { |char| File.join(File.expand_path(char), config_file) }
-    end
+    # The files of the arguments, in their order: a directory stands for the
+    # files of the pattern it holds, at any depth, in the order of their names. The
+    # directory is the base of the search, not part of the pattern, so that
+    # its name is read as it is, however it is spelled; the pattern takes
+    # the encoding of the argument, so that the paths found share it.
+    def self.files(arguments)
+      arguments.flat_map do |argument|
+        next [argument] unless File.directory?(argument)
 
-    # @private
-    #
-    # @return [Set] A list of absolute paths.
-    def self.fetch_file_paths(diff, prefix, suffix, path)
-      unless File.directory?(path)
-        warn "Sorry, invalid directory."
-        exit false
-      end
-
-      path = File.absolute_path(path) unless path.start_with?(File::SEPARATOR)
-
-      spec_paths = Dir.glob(File.join(path, "**", "#{prefix}*#{suffix}.rb")).to_set
-      return spec_paths unless diff
-
-      Dir.chdir(path) do
-        modified_paths = git_diff_paths
-
-        # select only modified specs
-        modified_spec_paths = spec_paths & modified_paths
-
-        # select only unmodified specs
-        unmodified_spec_paths = spec_paths - modified_spec_paths
-
-        # select only modified code
-        modified_code_paths = modified_paths - spec_paths
-        modified_code_filenames = modified_code_paths.map do |p|
-          p.split(File::SEPARATOR).last.delete_suffix(".rb")
-        end.to_set
-
-        # select only specs of the modified code
-        additional_spec_paths = unmodified_spec_paths.select do |unmodified_spec_path|
-          unmodified_spec_filename = unmodified_spec_path.split(File::SEPARATOR).last.delete_suffix(".rb")
-          modified_code_filenames.any? do |modified_code_filename|
-            unmodified_spec_filename.include?(modified_code_filename)
-          end
-        end
-
-        modified_spec_paths + additional_spec_paths
+        Dir.glob(SEARCH.encode(argument.encoding), base: argument).map { |path| File.join(argument, path) }
       end
     end
 
-    # @return [Set] The list of modified files.
-    def self.git_diff_paths
-      `git status --porcelain`
-        .split("\n")
-        .map { |p| File.absolute_path(p.split.last) }
-        .to_set
+    # The files in the random order of the seed of the option, drawn when the
+    # option gives none, after writing the command that gives this order again.
+    def self.shuffle(files, option, arguments, out)
+      digits = option[/\A--random=(\d+)\z/, 1]
+      seed = digits ? Integer(digits, 10) : Random.rand(2**32)
+      out.puts(["fix", "--random=#{seed}", *arguments.map { |argument| Shellwords.escape(argument) }].join(" "))
+      files.shuffle(random: Random.new(seed))
     end
+
+    # Runs the file in a process of its own, writing where the command
+    # writes, and tells whether it exited with 0. What the command wrote
+    # before is flushed first, so that it comes before what the file writes.
+    def self.met?(file, out, err)
+      out.flush
+      pid = Process.spawn(RbConfig.ruby, "--", file, out:, err:)
+      Process.wait2(pid).last.success?
+    end
+
+    # Writes how many files were met, and returns 0 when all were, 1
+    # otherwise.
+    def self.report(files, unmet, out)
+      count = "#{files.size} file#{"s" unless files.size == 1}"
+      out.puts(unmet.empty? ? "#{count} met" : "#{count}, #{unmet.size} not met: #{unmet.join(", ")}")
+      unmet.empty? ? 0 : 1
+    end
+
+    private_class_method :usage, :write, :test, :files, :shuffle, :met?, :report
   end
 end
