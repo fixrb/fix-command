@@ -2,6 +2,8 @@
 
 The `fix` command runs each specification file of [Fix](https://github.com/fixrb/fix) in a process of its own, lets their results through, and tells how many files were met: its status is 0 when every file is.
 
+[fixrb.dev](https://fixrb.dev/gems/fix-command/) presents the command, and the guide of Fix shows it in [Running specifications](https://fixrb.dev/gems/fix/v1/running-specifications/).
+
 ## Installation
 
 Add `gem "fix-command"` to your Gemfile, or run `gem install fix-command`. It brings `fix` with it. Ruby 3.3 or later is required, with `fork(2)`, as Fix requires it.
